@@ -20,11 +20,18 @@ func randomSign(rng *rand.Rand) float32 {
 
 func randomTransformTrigger(rng *rand.Rand) effects.TransformTrigger {
 	mode := rng.Intn(int(effects.TransformTriggerModeCount))
-	duration := config.EffectTransformDuration() * float64(frame.TPS())
+	mode = int(effects.TransformTriggerModeRng)
+	value := 0.
+	switch effects.TransformTriggerMode(mode) {
+	case effects.TransformTriggerModeEach:
+		value = config.EffectTransformsTriggerEachFactor
+	case effects.TransformTriggerModeRng:
+		value = config.EffectTransformsTriggerRngFactor
+	}
 
 	return effects.TransformTrigger{
 		Mode:  effects.TransformTriggerMode(mode),
-		Value: duration,
+		Value: value,
 	}
 }
 
@@ -35,7 +42,7 @@ func randomTransformInterpolation(rng *rand.Rand) effects.TransformInterpolation
 
 func randomXY(rng *rand.Rand, factor, base float32) (float32, float32) {
 	var dx, dy float32
-	if config.EffectCumulativeTransform() {
+	if config.EffectCumulativeTransform {
 		dx = rng.Float32() * factor * base
 		dy = rng.Float32() * factor * base
 	} else {
@@ -53,9 +60,9 @@ func randomRGB(rng *rand.Rand) (float32, float32, float32) {
 	var r, g, b float32
 
 	//if config.EffectCumulativeTransform() {
-	r = rng.Float32() * config.EffectColorFactor()
-	g = rng.Float32() * config.EffectColorFactor()
-	b = rng.Float32() * config.EffectColorFactor()
+	r = rng.Float32() * config.EffectColorFactor
+	g = rng.Float32() * config.EffectColorFactor
+	b = rng.Float32() * config.EffectColorFactor
 	/*} else {
 		switch rng.Intn(3) {
 		case 0:
@@ -72,18 +79,18 @@ func randomRGB(rng *rand.Rand) (float32, float32, float32) {
 
 func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 	return func(_ bool) *effects.Effect {
-		duration := config.EffectTransformDuration() * float64(frame.TPS())
+		duration := config.EffectTransformDuration * float64(frame.TPS())
 		transforms := []effects.TransformFunc{}
-		for i := 0; i < config.EffectTransformsCount(); i++ {
+		for i := 0; i < config.EffectTransformsCount; i++ {
 			base := effects.BaseTransform{
 				Trigger:       randomTransformTrigger(rng),
 				Interpolation: randomTransformInterpolation(rng),
 				Duration:      uint64(duration),
 			}
 			var t effects.Transform
-			switch 2 { //rng.Intn(5) {
+			switch rng.Intn(5) {
 			case 0:
-				dx, dy := randomXY(rng, config.EffectTranslationFactor(), 50)
+				dx, dy := randomXY(rng, config.EffectTranslationFactor, 50)
 				t = &effects.Translate{
 					BaseTransform: base,
 					Dx:            dx,
@@ -132,8 +139,8 @@ func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 			transforms = append(transforms, effects.NewTransformFunc(t))
 		}
 		var interval = uint64(1)
-		if config.EffectFrequency() > 0 {
-			interval = uint64(1 / config.EffectFrequency())
+		if config.EffectFrequency > 0 {
+			interval = uint64(1 / config.EffectFrequency)
 		}
 
 		return effects.New(
@@ -165,6 +172,6 @@ func NewDefaultEvent(rng *rand.Rand) *Event {
 			heuristics.Unknown:    NewNoopEffect,
 		},
 		Start:    frame.Current(),
-		Duration: uint64(config.EventDuration() * float64(ebiten.TPS())),
+		Duration: uint64(config.EventDuration * float64(ebiten.TPS())),
 	}
 }

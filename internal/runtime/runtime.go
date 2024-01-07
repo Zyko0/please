@@ -109,7 +109,7 @@ func Update(screen *ebiten.Image) {
 	lastUpdate = tick
 	// If not chilling anymore and no active event, make a new one
 	if !frame.Chilling() && activeEvent.Expired() {
-		activeEvent = event.NewEbitengineEvent(rng) //event.NewDefaultEvent(rng)
+		activeEvent = event.NewDefaultEvent(rng) //event.NewDefaultEvent(rng)
 		// Reset last effects so that they get populated by new event
 		clear(effectsByHash)
 	}

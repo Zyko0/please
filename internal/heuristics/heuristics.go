@@ -241,6 +241,15 @@ func (c *Confidence) String() string {
 	return sb.String()
 }
 
+func normalizeFunc(funcPath string) string {
+	funcPath = strings.ToLower(funcPath)
+	parts := strings.Split(funcPath, "/")
+	if len(parts) > 3 {
+		funcPath = strings.Join(parts[3:], "/")
+	}
+	return funcPath
+}
+
 func Compute(calls map[caller.Hash]uint64, infos map[caller.Hash]*caller.Info) map[caller.Hash]*Confidence {
 	heuristics := make(map[caller.Hash]*Heuristic, len(calls))
 	// Compute guesses for each hash
@@ -272,7 +281,7 @@ func Compute(calls map[caller.Hash]uint64, infos map[caller.Hash]*caller.Info) m
 			if c.ParseOrigin() != caller.OriginUser {
 				continue
 			}
-			normalized := strings.ToLower(c.Func)
+			normalized := normalizeFunc(c.Func)
 			heuristics[hash][Player] += player(normalized, count)
 			heuristics[hash][Enemy] += enemy(normalized)
 			heuristics[hash][Resource] += resource(normalized)

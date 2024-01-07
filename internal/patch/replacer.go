@@ -32,26 +32,6 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 	info := caller.ExtractInfo()
 	// If DrawFinalScreen is called, update the global manager
 	// https://github.com/hajimehoshi/ebiten/blob/v2.6.3/gameforui.go#L173-L178
-	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
-		runtime.Update(dst)
-	} else {
-		runtime.RegisterCall(info)
-	}
-	// Get active effect
-	effect := runtime.GetEffect(info)
-	// New options
-	newopts := &ebiten.DrawTrianglesShaderOptions{
-		Uniforms: effect.Uniforms(),
-		Images: [4]*ebiten.Image{
-			src,
-		},
-		AntiAlias: false,
-	}
-	if opts != nil {
-		newopts.CompositeMode = opts.CompositeMode
-		newopts.Blend = opts.Blend
-	}
-	// Translate to DrawTrianglesShader command
 	var geom *ebiten.GeoM
 	var colorScale *ebiten.ColorScale
 	if opts != nil {
@@ -62,6 +42,31 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 			colorScale.ScaleWithColorScale(*sc)
 		}
 	}
+	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
+		runtime.Update(dst)
+		// If there's a fullscreen effect display screen with the effect and return
+		patchTrianglesShader.Disable()
+		defer patchTrianglesShader.Enable()
+		graphics.DrawFullscreenEffect(dst, src, geom, nil)
+		return
+	} else {
+		runtime.RegisterCall(info)
+	}
+	// Get active effect
+	effect := runtime.GetEffect(info)
+	// New options
+	newopts := &ebiten.DrawTrianglesShaderOptions{
+		Uniforms: graphics.EffectUniforms(),
+		Images: [4]*ebiten.Image{
+			src,
+		},
+		AntiAlias: false,
+	}
+	if opts != nil {
+		newopts.CompositeMode = opts.CompositeMode
+		newopts.Blend = opts.Blend
+	}
+	// Translate to DrawTrianglesShader command
 	vertices, indices := graphics.QuadVerticesIndices(dst, src, geom, colorScale)
 	if img := effect.Image(); img != nil {
 		newopts.Images[0] = img
@@ -89,7 +94,7 @@ func DrawTrianglesReplacer(dst *ebiten.Image, vertices []ebiten.Vertex, indices 
 	}
 	// New options
 	newopts := &ebiten.DrawTrianglesShaderOptions{
-		Uniforms: effect.Uniforms(),
+		Uniforms: graphics.EffectUniforms(),
 		Images: [4]*ebiten.Image{
 			src,
 		},
@@ -138,9 +143,11 @@ func DrawRectShaderReplacer(dst *ebiten.Image, width, height int, shader *ebiten
 	}
 	vertices, indices := graphics.QuadVerticesIndicesWithDims(dst, src, width, height, geom, colorScale)
 	// If the effect forces a new image
-	if img := effect.Image(); img != nil {
-		newopts.Images[0] = img
-		graphics.AdaptVerticesToCustomImage(vertices, img)
+	if effect.Shader() != nil && effect.Image() != nil {
+		shader = effect.Shader()
+		newopts.Uniforms = graphics.EffectUniforms()
+		newopts.Images[0] = effect.Image()
+		graphics.AdaptVerticesToCustomImage(vertices, effect.Image())
 	}
 	effect.ApplyTransformations(vertices)
 	// Draw triangles shader
@@ -172,9 +179,7 @@ func DrawTrianglesShaderReplacer(dst *ebiten.Image, vertices []ebiten.Vertex, in
 	defer locker.Unlock()
 	info := caller.ExtractInfo()
 	if opts == nil {
-		opts = &ebiten.DrawTrianglesShaderOptions{
-			Uniforms: map[string]any{},
-		}
+		opts = &ebiten.DrawTrianglesShaderOptions{}
 	}
 	// Register call information
 	runtime.RegisterCall(info)
@@ -182,9 +187,7 @@ func DrawTrianglesShaderReplacer(dst *ebiten.Image, vertices []ebiten.Vertex, in
 	effect := runtime.GetEffect(info)
 	if effect.Shader() != nil && effect.Image() != nil {
 		shader = effect.Shader()
-		for k, v := range effect.Uniforms() {
-			opts.Uniforms[k] = v
-		}
+		opts.Uniforms = graphics.EffectUniforms()
 		opts.Images[0] = effect.Image()
 		graphics.AdaptVerticesToCustomImage(vertices, effect.Image())
 	}

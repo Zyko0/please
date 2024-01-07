@@ -299,11 +299,11 @@ func NewEbitengineEvent(rng *rand.Rand) *Event {
 			heuristics.Resource:   newEbitengineResourceEffect(rng),
 			heuristics.Projectile: newEbitengineProjectileEffect(rng),
 			heuristics.Block:      newEbitengineBlockEffect(rng),
-			heuristics.UI:         NewNoopEffect,
+			heuristics.UI:         newRandomEffect(rng),
 			heuristics.Text:       newRandomEffect(rng),
 			heuristics.Unknown:    NewNoopEffect,
 		},
 		Start:    frame.Current(),
-		Duration: uint64(config.EventDuration() * float64(ebiten.TPS())),
+		Duration: uint64(config.EventDuration * float64(ebiten.TPS())),
 	}
 }

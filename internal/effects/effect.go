@@ -4,7 +4,6 @@ import (
 	"math/rand"
 
 	"github.com/Zyko0/please/internal/assets"
-	"github.com/Zyko0/please/internal/frame"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -82,13 +81,4 @@ func (e Effect) ApplyText(s string) string {
 		return s
 	}
 	return e.textFunc(s)
-}
-
-func (e *Effect) Uniforms() map[string]any {
-	tick := frame.Current()
-	tps := frame.TPS()
-	return map[string]any{
-		"ITime": float32(tick / tps),
-		"FTime": float32(tick%tps) / float32(tps),
-	}
 }
