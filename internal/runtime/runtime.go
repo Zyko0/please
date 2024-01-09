@@ -1,14 +1,12 @@
 package runtime
 
 import (
-	"fmt"
-	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/Zyko0/please/event"
 	"github.com/Zyko0/please/internal/caller"
+	"github.com/Zyko0/please/internal/config"
 	"github.com/Zyko0/please/internal/effects"
 	"github.com/Zyko0/please/internal/frame"
 	"github.com/Zyko0/please/internal/graphics"
@@ -18,7 +16,6 @@ import (
 
 var (
 	noopEffect = effects.NewNoopEffect()
-	noopEvent  = &event.Event{}
 )
 
 var (
@@ -34,8 +31,7 @@ var (
 	heuristicsMapping = map[caller.Hash]*heuristics.Confidence{}
 
 	activeEvent *event.Event
-	screenEvent *event.Event // TODO:
-	//commandQueue = queue.NewTickQueue[func()]()
+	screenEvent *event.ScreenEvent
 )
 
 func RNG() *rand.Rand {
@@ -70,6 +66,14 @@ func GetEffect(info *caller.Info) *effects.Effect {
 	}
 
 	return e
+}
+
+func GetScreenEvent() *event.ScreenEvent {
+	if frame.Chilling() || screenEvent == nil || screenEvent.Expired() {
+		return nil
+	}
+
+	return screenEvent
 }
 
 func sign32(n float64) float32 {
@@ -109,11 +113,16 @@ func Update(screen *ebiten.Image) {
 	lastUpdate = tick
 	// If not chilling anymore and no active event, make a new one
 	if !frame.Chilling() && activeEvent.Expired() {
-		activeEvent = event.NewDefaultEvent(rng) //event.NewDefaultEvent(rng)
+		activeEvent = event.NewNoopEvent(rng)
 		// Reset last effects so that they get populated by new event
 		clear(effectsByHash)
 	}
 	activeEvent.Update()
+	// If not chilling anymore and no active screen event, and it's time for one
+	if !frame.Chilling() && screenEvent.Expired() && tick%uint64(config.ScreenEventFrequency*float64(frame.TPS())) == 0 {
+		screenEvent = event.NewScreenEventProjection(rng)
+	}
+	screenEvent.Update()
 	// Clear recorded draw entries and backup last frame
 	clear(lastCallsByHash)
 	clear(lastCallersByHash)
@@ -130,7 +139,7 @@ func Update(screen *ebiten.Image) {
 		e.ResetCounter()
 	}
 	// Debug
-	var biggestFn, biggestCount int
+	/*var biggestFn, biggestCount int
 	for hash, count := range lastCallsByHash {
 		str, ok := infoString(hash)
 		if !ok {
@@ -154,12 +163,6 @@ func Update(screen *ebiten.Image) {
 		}
 		fmt.Printf(fmtFull, str, count)
 	}
-	// Set active events if any
-	/*activeEvent.Update()
-	if activeEvent.Expired() {
-		activeEvent = nil
-		// TODO: enqueue new event
-	}*/
 	// Update heuristics (who is a player, an enemy, a projectile, etc..)
 	heuristicsMapping = heuristics.Compute(lastCallsByHash, lastCallersByHash)
 	fmt.Println("Heuristics")
@@ -170,6 +173,6 @@ func Update(screen *ebiten.Image) {
 		}
 		fmt.Printf("%s => %v\n", str, score)
 	}
-	fmt.Println("------------")
+	fmt.Println("------------")*/
 	// TODO: based on m.lastCallsByHash
 }

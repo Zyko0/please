@@ -10,4 +10,7 @@ var (
 	EffectFrequency                   = float64(0.2)
 	EffectCumulativeTransform         = false
 	EventDuration                     = float64(5)
+
+	ScreenEventFrequency = float64(12.5)/8
+	ScreenEventDuration  = float64(7.5)
 )

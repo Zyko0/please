@@ -175,3 +175,22 @@ func NewDefaultEvent(rng *rand.Rand) *Event {
 		Duration: uint64(config.EventDuration * float64(ebiten.TPS())),
 	}
 }
+
+func NewNoopEvent(rng *rand.Rand) *Event {
+	return &Event{
+		effectInstances: [heuristics.Count]int{},
+		Name:            "Noop",
+		EffectInstancers: [heuristics.Count]NewEffectFunc{
+			heuristics.Player:     NewNoopEffect,
+			heuristics.Enemy:      NewNoopEffect,
+			heuristics.Resource:   NewNoopEffect,
+			heuristics.Projectile: NewNoopEffect,
+			heuristics.Block:      NewNoopEffect,
+			heuristics.UI:         NewNoopEffect,
+			heuristics.Text:       NewNoopEffect,
+			heuristics.Unknown:    NewNoopEffect,
+		},
+		Start:    frame.Current(),
+		Duration: uint64(config.EventDuration * float64(ebiten.TPS())),
+	}
+}

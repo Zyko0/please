@@ -4,7 +4,7 @@ package main
 
 func phong(lightDir, normal, clr vec3) vec3 {
 	// ambient
-	ambient := clr * 0.5
+	ambient := clr * 0.1
 
 	// diffuse
 	dotLN := clamp(dot(lightDir, normal), 0., 1.)
@@ -28,6 +28,7 @@ func heightNormal(uv vec2) vec3 {
 
 	xy := (p - vec2(h1, v1)) * 50.
 
+	//return normalize(vec3(xy, p))
 	return normalize(vec3(xy, p))
 }
 
@@ -38,27 +39,15 @@ func Fragment(dst vec4, src vec2, color vec4) vec4 {
 	const pi = 3.1415
 	clr := imageSrc0At(src).rgb
 	height := gray(clr)
-	_ = height
 	normal := heightNormal(src)
-	//return vec4((normal+1)/2, 1.)
-	//ratio := imageSrc0Size().x/imageSrc0Size().y
 	tc := (src-imageSrc0Origin())/imageSrc0Size()*2 - 1
-	uv := vec3(tc.x, tc.y, -height)
-	lposL := vec3(-1.25, sin(ITime+FTime), -1)
-	lposR := vec3(1.25, sin(pi+ITime+FTime), -1)
-	/*d := length(uv.xz-lposL.xz) - 0.25
-	if d < 0 {
-		return vec4(1, 0, 0, 1)
-	}
-	d = length(uv.xz-lposR.xz) - 0.25
-	if d < 0 {
-		return vec4(0, 1, 0, 1)
-	}
-	_ = lposR*/
+	uv := vec3(tc.x, tc.y, -height*0.75)
+	lposL := vec3(-1.25, sin(ITime+FTime), -1.1)
+	lposR := vec3(1.25, sin(pi+ITime+FTime), -1.1)
 	ldirL := normalize(uv - lposL)
 	ldirR := normalize(uv - lposR)
 	clr = phong(ldirL, normal, clr)
 	clr += phong(ldirR, normal, clr)
 
-	return vec4(clr/2, 1.)
+	return vec4(clr, 1.)
 }

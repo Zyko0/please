@@ -45,10 +45,12 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
 		runtime.Update(dst)
 		// If there's a fullscreen effect display screen with the effect and return
-		patchTrianglesShader.Disable()
-		defer patchTrianglesShader.Enable()
-		graphics.DrawFullscreenEffect(dst, src, geom, nil)
-		return
+		if evt := runtime.GetScreenEvent(); evt != nil && !evt.Expired() {
+			patchTrianglesShader.Disable()
+			defer patchTrianglesShader.Enable()
+			graphics.DrawFullscreenEffect(dst, src, geom, evt.Shader())
+			return
+		}
 	} else {
 		runtime.RegisterCall(info)
 	}
@@ -122,6 +124,13 @@ func DrawRectShaderReplacer(dst *ebiten.Image, width, height int, shader *ebiten
 	// https://github.com/hajimehoshi/ebiten/blob/v2.6.3/gameforui.go#L184
 	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
 		runtime.Update(dst)
+		// If there's a fullscreen effect display screen with the effect and return
+		if evt := runtime.GetScreenEvent(); evt != nil && !evt.Expired() {
+			patchTrianglesShader.Disable()
+			defer patchTrianglesShader.Enable()
+			graphics.DrawFullscreenEffect(dst, opts.Images[0], &opts.GeoM, evt.Shader())
+			return
+		}
 	} else {
 		runtime.RegisterCall(info)
 	}

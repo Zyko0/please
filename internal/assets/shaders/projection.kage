@@ -1,0 +1,122 @@
+//kage:unit pixels
+
+package main
+
+const (
+	HeightFactor = 0.4
+	MaxDepth     = 8.
+)
+
+func phong(lightDir, normal, clr vec3) vec3 {
+	// ambient
+	ambient := clr * 0.5
+
+	// diffuse
+	dotLN := clamp(dot(lightDir, normal), 0., 1.)
+	diffuse := clr * dotLN
+
+	// specular
+	halfwayDir := normalize(lightDir + normal)
+	specular := vec3(0.25) * pow(max(dot(normal, halfwayDir), 0.), 64.)
+
+	return ambient + diffuse + specular
+}
+
+func gray(clr vec3) float {
+	return clr.r*0.299 + clr.g*0.587 + clr.b*0.114
+}
+
+func path() vec2 {
+	return vec2(
+		sin((ITime+FTime)*0.5),
+		sin((ITime+FTime)*0.75+3.1415),
+	)
+}
+
+func sdScene(p vec3) (float, vec3) {
+	q := abs(p) - 1
+
+	if q.x <= 0 && q.y <= 0 {
+		uv := ((p.xy+1)/2)*imageSrc0Size() + imageSrc0Origin()
+		clr := imageSrc0At(floor(uv)).rgb
+		// Note: using luminance doesn't produce interesting results
+		h := (exp(length(clr)) - 1) * HeightFactor
+		//h := (clr.r+clr.g+clr.b) * HeightFactor
+		d := -p.z - h
+
+		return d, clr
+	}
+
+	q = max(q, 0)
+	return max(q.x, max(q.y, q.z-HeightFactor)), vec3(1)
+}
+
+func rayMarch(ro, rd vec3) (float, vec3) {
+	const (
+		MaxSteps  = 64.
+		Precision = 0.0005
+	)
+
+	depth := 0.
+	d := 0.
+	clr := vec3(0)
+	for i := 0; i < MaxSteps; i++ {
+		p := ro + depth*rd
+		d, clr = sdScene(p)
+		d *= 0.5
+		if d < Precision || depth > MaxDepth {
+			break
+		}
+		d = min(d, 0.00075)
+		depth += d
+	}
+
+	return depth, clr
+}
+
+func calcNormal(p vec3) vec3 {
+	e := vec2(1., -1.) * 0.001
+
+	var n vec3
+	d, _ := sdScene(p + e.xyy)
+	n += e.xyy * d
+	d, _ = sdScene(p + e.yyx)
+	n += e.yyx * d
+	d, _ = sdScene(p + e.yxy)
+	n += e.yxy * d
+	d, _ = sdScene(p + e.xxx)
+	n += e.xxx * d
+
+	return normalize(n)
+}
+
+var ITime float
+var FTime float
+
+func Fragment(dst vec4, src vec2, color vec4) vec4 {
+	const pi = 3.1415
+
+	uv := (src-imageSrc0Origin())/imageSrc0Size()*2 - 1
+	ro := vec3(uv.x, uv.y, -HeightFactor*0.9) //-1-HeightFactor)
+	rd := normalize(vec3(uv*path(), 1.))                 // ray direction
+	//rd.x *= pathx()
+
+	d, clr := rayMarch(ro, rd)
+	if d > MaxDepth {
+		return vec4(0, 0, 0, 1)
+	}
+
+	p := ro + rd*d
+	uv = ((p.xy+1)/2)*imageSrc0Size() + imageSrc0Origin()
+	clr = imageSrc0At(floor(uv)).rgb
+	normal := -calcNormal(p)
+
+	//return vec4((normal+1)/2, 1.)
+	lpos := vec3(0, 0, -0.5-HeightFactor)
+	ldir := normalize(p - lpos)
+	//ldir2 := normalize(lpos - lpos)
+	clr = phong(ldir, normal, clr)
+	//clr += phong(ldir2, normal, clr)
+
+	return vec4(clr, 1.)
+}

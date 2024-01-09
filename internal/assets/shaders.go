@@ -15,6 +15,10 @@ var (
 	//go:embed shaders/relief.kage
 	srcShaderRelief []byte
 	ShaderRelief    *ebiten.Shader
+
+	//go:embed shaders/projection.kage
+	srcShaderProjection []byte
+	ShaderProjection    *ebiten.Shader
 )
 
 func init() {
@@ -26,6 +30,11 @@ func init() {
 	}
 
 	ShaderRelief, err = ebiten.NewShader(srcShaderRelief)
+	if err != nil {
+		log.Fatal("err:", err)
+	}
+
+	ShaderProjection, err = ebiten.NewShader(srcShaderProjection)
 	if err != nil {
 		log.Fatal("err:", err)
 	}
