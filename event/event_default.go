@@ -18,23 +18,6 @@ func randomSign(rng *rand.Rand) float32 {
 	return 1
 }
 
-func randomTransformTrigger(rng *rand.Rand) effects.TransformTrigger {
-	mode := rng.Intn(int(effects.TransformTriggerModeCount))
-	mode = int(effects.TransformTriggerModeRng)
-	value := 0.
-	switch effects.TransformTriggerMode(mode) {
-	case effects.TransformTriggerModeEach:
-		value = config.EffectTransformsTriggerEachFactor
-	case effects.TransformTriggerModeRng:
-		value = config.EffectTransformsTriggerRngFactor
-	}
-
-	return effects.TransformTrigger{
-		Mode:  effects.TransformTriggerMode(mode),
-		Value: value,
-	}
-}
-
 func randomTransformInterpolation(rng *rand.Rand) effects.TransformInterpolation {
 	interp := rng.Intn(int(effects.TransformInterpolationCount))
 	return effects.TransformInterpolation(interp)
@@ -83,7 +66,6 @@ func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{}
 		for i := 0; i < config.EffectTransformsCount; i++ {
 			base := effects.BaseTransform{
-				Trigger:       randomTransformTrigger(rng),
 				Interpolation: randomTransformInterpolation(rng),
 				Duration:      uint64(duration),
 			}
@@ -111,14 +93,6 @@ func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 					CMin:          0,
 					CMax:          1,
 				}
-			/*case X: // TODO: bad
-			r, g, b := randomRGB(rng)
-			t = &effects.TranslateColor{
-				BaseTransform: base,
-				R:             r,
-				G:             g,
-				B:             b,
-			}*/
 			case 3:
 				r, g, b := randomRGB(rng)
 				t = &effects.RotateColor{
@@ -139,7 +113,7 @@ func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 			transforms = append(transforms, effects.NewTransformFunc(t))
 		}
 		var interval = uint64(1)
-		if config.EffectFrequency > 0 {
+		if config.EffectFrequency > 0 && config.EffectFrequency <= 1 {
 			interval = uint64(1 / config.EffectFrequency)
 		}
 
@@ -157,7 +131,7 @@ func NewNoopEffect(_ bool) *effects.Effect {
 	return effects.NewNoopEffect()
 }
 
-func NewDefaultEvent(rng *rand.Rand) *Event {
+func NewEventDefault(rng *rand.Rand) *Event {
 	return &Event{
 		effectInstances: [heuristics.Count]int{},
 		Name:            "Default",
@@ -167,27 +141,8 @@ func NewDefaultEvent(rng *rand.Rand) *Event {
 			heuristics.Resource:   newRandomEffect(rng),
 			heuristics.Projectile: newRandomEffect(rng),
 			heuristics.Block:      newRandomEffect(rng),
-			heuristics.UI:         newRandomEffect(rng),
-			heuristics.Text:       newRandomEffect(rng),
-			heuristics.Unknown:    NewNoopEffect,
-		},
-		Start:    frame.Current(),
-		Duration: uint64(config.EventDuration * float64(ebiten.TPS())),
-	}
-}
-
-func NewNoopEvent(rng *rand.Rand) *Event {
-	return &Event{
-		effectInstances: [heuristics.Count]int{},
-		Name:            "Noop",
-		EffectInstancers: [heuristics.Count]NewEffectFunc{
-			heuristics.Player:     NewNoopEffect,
-			heuristics.Enemy:      NewNoopEffect,
-			heuristics.Resource:   NewNoopEffect,
-			heuristics.Projectile: NewNoopEffect,
-			heuristics.Block:      NewNoopEffect,
 			heuristics.UI:         NewNoopEffect,
-			heuristics.Text:       NewNoopEffect,
+			heuristics.Text:       newRandomEffect(rng),
 			heuristics.Unknown:    NewNoopEffect,
 		},
 		Start:    frame.Current(),

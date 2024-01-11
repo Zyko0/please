@@ -9,18 +9,18 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func New3DEvent(rng *rand.Rand) *Event {
+func NewEventNoop(rng *rand.Rand) *Event {
 	return &Event{
 		effectInstances: [heuristics.Count]int{},
-		Name:            "3D",
+		Name:            "Noop",
 		EffectInstancers: [heuristics.Count]NewEffectFunc{
-			heuristics.Player:     newRandomEffect(rng),
-			heuristics.Enemy:      newRandomEffect(rng),
-			heuristics.Resource:   newRandomEffect(rng),
-			heuristics.Projectile: newRandomEffect(rng),
-			heuristics.Block:      newRandomEffect(rng),
-			heuristics.UI:         newRandomEffect(rng),
-			heuristics.Text:       newRandomEffect(rng),
+			heuristics.Player:     NewNoopEffect,
+			heuristics.Enemy:      NewNoopEffect,
+			heuristics.Resource:   NewNoopEffect,
+			heuristics.Projectile: NewNoopEffect,
+			heuristics.Block:      NewNoopEffect,
+			heuristics.UI:         NewNoopEffect,
+			heuristics.Text:       NewNoopEffect,
 			heuristics.Unknown:    NewNoopEffect,
 		},
 		Start:    frame.Current(),

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Zyko0/please/internal/caller"
+	"github.com/Zyko0/please/internal/graphics"
 )
 
 type ID byte
@@ -29,18 +30,19 @@ var playerCoeffs = map[string]float64{
 	"friend":    1.,
 	"actor":     0.75,
 	"unit":      0.65,
+	"pet":       0.5,
 	"character": 0.5,
 	"troop":     0.45,
 }
 
-func player(hash string, count uint64) float64 {
+func player(hash string) float64 {
 	value := 0.
 	for name, coeff := range playerCoeffs {
 		occ := float64(strings.Count(hash, name))
 		value += occ * coeff
 	}
-	// Assume the least calls there is, the most likely it is to be the player
-	return value / float64(count)
+
+	return value
 }
 
 var enemyCoeffs = map[string]float64{
@@ -52,6 +54,7 @@ var enemyCoeffs = map[string]float64{
 	"creature":   1.,
 	"elite":      1.,
 	"hostile":    1.,
+	"zombie":     1.,
 	"wave":       0.75,
 	"summon":     0.5,
 	"invocation": 0.5,
@@ -78,6 +81,9 @@ var projectileCoeffs = map[string]float64{
 	"laser":       1.,
 	"lazer":       1., // ??
 	"projecticle": 1., // Hi kettek
+	"particle":    0.8,
+	"rain":        0.8,
+	"droplet":     0.8,
 	"ball":        0.75,
 	"beam":        0.75,
 	"shot":        0.5,
@@ -91,7 +97,7 @@ func projectile(hash string) float64 {
 		occ := float64(strings.Count(hash, name))
 		value += occ * coeff
 	}
-	// Assume the most calls there is, the most likely it is to be a projectile
+
 	return value
 }
 
@@ -115,7 +121,9 @@ var resourceCoeffs = map[string]float64{
 	"bonus":     1.,
 	"pickup":    1.,
 	"malus":     1.,
+	"coin":      1.,
 	"buff":      0.75,
+	"piece":     0.5,
 	"wood":      0.5,
 	"metal":     0.5,
 }
@@ -126,7 +134,7 @@ func resource(hash string) float64 {
 		occ := float64(strings.Count(hash, name))
 		value += occ * coeff
 	}
-	// Assume the most calls there is, the most likely it is to be a resource
+
 	return value
 }
 
@@ -156,6 +164,7 @@ var blockCoeffs = map[string]float64{
 	"structure":   1.,
 	"turret":      1.,
 	"rock":        1.,
+	"stone":       1.,
 	"water":       1.,
 	"fire":        1.,
 	"mountain":    1.,
@@ -172,7 +181,7 @@ func block(hash string) float64 {
 		occ := float64(strings.Count(hash, name))
 		value += occ * coeff
 	}
-	// Assume the most calls there is, the most likely it is to be a block
+
 	return value
 }
 
@@ -201,7 +210,7 @@ func ui(hash string) float64 {
 		occ := float64(strings.Count(hash, name))
 		value += occ * coeff
 	}
-	// Assume the most calls there is, the most likely it is to be a UI element
+
 	return value
 }
 
@@ -250,16 +259,24 @@ func normalizeFunc(funcPath string) string {
 	return funcPath
 }
 
-func Compute(calls map[caller.Hash]uint64, infos map[caller.Hash]*caller.Info) map[caller.Hash]*Confidence {
-	heuristics := make(map[caller.Hash]*Heuristic, len(calls))
+func likelyOffscreen(bounds [2]uint) bool {
+	const threshold = 1. / 4.
+
+	if graphics.Screen() == nil {
+		return true
+	}
+	screen := graphics.Screen().Bounds()
+
+	return bounds[0] >= uint(float64(screen.Dy())*threshold) ||
+		bounds[1] >= uint(float64(screen.Dy())*threshold)
+}
+
+func Compute(infos map[caller.Hash]*caller.Info, bounds map[caller.Hash][2]uint) map[caller.Hash]*Confidence {
+	heuristics := make(map[caller.Hash]*Heuristic, len(infos))
 	// Compute guesses for each hash
-	for hash, count := range calls {
+	for hash, info := range infos {
 		heuristics[hash] = nil
-		if count == 0 {
-			continue
-		}
-		info, ok := infos[hash]
-		if !ok || info == nil {
+		if info == nil {
 			// Shouldn't happen
 			continue
 		}
@@ -274,6 +291,11 @@ func Compute(calls map[caller.Hash]uint64, infos map[caller.Hash]*caller.Info) m
 		if info.Origin != caller.OriginUser && info.User == nil {
 			continue
 		}
+		// If the source image is likely an offscreen (or too big image)
+		// Or there has been no image at all, skip it
+		if b, ok := bounds[hash]; !ok || likelyOffscreen(b) {
+			continue
+		}
 		// Compute heuristic score based on all previous callers
 		heuristics[hash] = &Heuristic{}
 		for _, c := range info.AllCallers {
@@ -282,7 +304,7 @@ func Compute(calls map[caller.Hash]uint64, infos map[caller.Hash]*caller.Info) m
 				continue
 			}
 			normalized := normalizeFunc(c.Func)
-			heuristics[hash][Player] += player(normalized, count)
+			heuristics[hash][Player] += player(normalized)
 			heuristics[hash][Enemy] += enemy(normalized)
 			heuristics[hash][Resource] += resource(normalized)
 			heuristics[hash][Projectile] += projectile(normalized)

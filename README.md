@@ -6,10 +6,31 @@ This is my entry for the https://itch.io/jam/ebitengine-holiday-hack-2023 jam an
 
 # Usage
 
-## Library-mode
+```
+go run cmd/main.go <repository_path> [relative_build_folder:optional]
+```
 
-## Installation
+Flags:
+- `--debug`: Outputs extra information about the linking process
+- `--mode`: Defines the level of glitchness (NONE,DEFAULT,MEDIUM,UNSAFE)
+
+## Examples
+
+- `go run cmd/main.go github.com/mharv/scrapyard-charter`
+- `go run cmd/main.go github.com/elamre/attractive_defense`
+- `go run cmd/main.go github.com/tinne26/transition`
+- `go run cmd/main.go github.com/ketMix/retromancer`
+
+With a relative folder to run from:
+- `go run cmd/main.go github.com/hajimehoshi/ebiten/v2@latest examples/flappy`
+- `go run cmd/main.go github.com/hajimehoshi/ebiten/v2@latest examples/snake`
+- `go run cmd/main.go github.com/hajimehoshi/ebiten/v2@latest examples/blocks`
+- `go run cmd/main.go github.com/kettek/ebijam22 cmd/magnet`
+
+# Library-mode
+
+Just ask `please.GlitchMe()` somewhere! (ideally before `ebiten.RunGame`)
 
 ### Notes
 
-- Despite the attempt at putting some locks here and there, this library is not thread-safe (e.g if you're calling DrawX commands from multiple goroutines at the same time).
+- Despite the attempt at putting some locks here and there, this library is not thread-safe (if you're calling DrawX commands from multiple goroutines at the same time).

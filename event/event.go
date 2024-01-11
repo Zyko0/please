@@ -1,6 +1,8 @@
 package event
 
 import (
+	"math/rand"
+
 	"github.com/Zyko0/please/internal/effects"
 	"github.com/Zyko0/please/internal/heuristics"
 )
@@ -33,3 +35,10 @@ func (e *Event) NewEffect(identifier heuristics.ID) *effects.Effect {
 	// Return a variation of the effect if the base one is already active
 	return e.EffectInstancers[identifier](e.effectInstances[identifier] > 1)
 }
+
+var (
+	EventPool = []func(*rand.Rand) *Event{
+		NewEventDefault,
+		NewEventEbitengine,
+	}
+)

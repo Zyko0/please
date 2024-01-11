@@ -1,6 +1,8 @@
 package patch
 
 import (
+	"image"
+
 	"github.com/Zyko0/please/internal/caller"
 	"github.com/Zyko0/please/internal/graphics"
 	"github.com/Zyko0/please/internal/locker"
@@ -12,8 +14,10 @@ import (
 
 // Keep patch references in order to call the originals
 var (
-	patchText            *Patch
-	patchTrianglesShader *Patch
+	patchText                *Patch
+	patchTrianglesShader     *Patch
+	patchNewImage            *Patch
+	patchNewImageWithOptions *Patch
 )
 
 func SetTextPatch(p *Patch) {
@@ -24,7 +28,35 @@ func SetTrianglesShaderPatch(p *Patch) {
 	patchTrianglesShader = p
 }
 
-func NewImageReplacer() {}
+func SetNewImagePatch(p *Patch) {
+	patchNewImage = p
+}
+
+func SetNewImageWithOptionsPatch(p *Patch) {
+	patchNewImageWithOptions = p
+}
+
+func NewImageReplacer(width, height int) *ebiten.Image {
+	locker.Lock()
+	defer locker.Unlock()
+
+	runtime.RegisterNewImage()
+
+	patchNewImage.Disable()
+	defer patchNewImage.Enable()
+	return ebiten.NewImage(width, height)
+}
+
+func NewImageWithOptionsReplacer(bounds image.Rectangle, options *ebiten.NewImageOptions) *ebiten.Image {
+	locker.Lock()
+	defer locker.Unlock()
+
+	runtime.RegisterNewImage()
+
+	patchNewImageWithOptions.Disable()
+	defer patchNewImageWithOptions.Enable()
+	return ebiten.NewImageWithOptions(bounds, options)
+}
 
 func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 	locker.Lock()
@@ -51,8 +83,6 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 			graphics.DrawFullscreenEffect(dst, src, geom, evt.Shader())
 			return
 		}
-	} else {
-		runtime.RegisterCall(info)
 	}
 	// Get active effect
 	effect := runtime.GetEffect(info)
@@ -68,7 +98,9 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 		newopts.CompositeMode = opts.CompositeMode
 		newopts.Blend = opts.Blend
 	}
-	// Translate to DrawTrianglesShader command
+	// Register call and image information
+	runtime.RegisterCall(info, src, geom)
+	// Build vertices, indices
 	vertices, indices := graphics.QuadVerticesIndices(dst, src, geom, colorScale)
 	if img := effect.Image(); img != nil {
 		newopts.Images[0] = img
@@ -86,10 +118,11 @@ func DrawTrianglesReplacer(dst *ebiten.Image, vertices []ebiten.Vertex, indices 
 	locker.Lock()
 	defer locker.Unlock()
 	info := caller.ExtractInfo()
-	// Increment heuristics
-	runtime.RegisterCall(info)
 	// Get active effect
 	effect := runtime.GetEffect(info)
+	// Register call and image information
+	runtime.RegisterCall(info, src, nil)
+	// Update src image if there's one provided with the active effect
 	if img := effect.Image(); img != nil {
 		src = img
 		graphics.AdaptVerticesToCustomImage(vertices, src)
@@ -131,8 +164,6 @@ func DrawRectShaderReplacer(dst *ebiten.Image, width, height int, shader *ebiten
 			graphics.DrawFullscreenEffect(dst, opts.Images[0], &opts.GeoM, evt.Shader())
 			return
 		}
-	} else {
-		runtime.RegisterCall(info)
 	}
 	// Get active effect
 	effect := runtime.GetEffect(info)
@@ -150,6 +181,9 @@ func DrawRectShaderReplacer(dst *ebiten.Image, width, height int, shader *ebiten
 		newopts.Images = opts.Images
 		newopts.Uniforms = opts.Uniforms
 	}
+	// Register call and image information
+	runtime.RegisterCall(info, src, geom)
+	// Build vertices, indices
 	vertices, indices := graphics.QuadVerticesIndicesWithDims(dst, src, width, height, geom, colorScale)
 	// If the effect forces a new image
 	if effect.Shader() != nil && effect.Image() != nil {
@@ -169,7 +203,7 @@ func TextDrawReplacer(dst *ebiten.Image, str string, face font.Face, opts *ebite
 	locker.Lock()
 	info := caller.ExtractInfo()
 	// Register call information
-	runtime.RegisterCall(info)
+	runtime.RegisterCall(info, nil, nil)
 	// Get active effect
 	effect := runtime.GetEffect(info)
 	// Apply effect transformations
@@ -187,11 +221,14 @@ func DrawTrianglesShaderReplacer(dst *ebiten.Image, vertices []ebiten.Vertex, in
 	locker.Lock()
 	defer locker.Unlock()
 	info := caller.ExtractInfo()
+	var src *ebiten.Image
 	if opts == nil {
 		opts = &ebiten.DrawTrianglesShaderOptions{}
+	} else {
+		src = opts.Images[0]
 	}
-	// Register call information
-	runtime.RegisterCall(info)
+	// Register call and image information
+	runtime.RegisterCall(info, src, nil)
 	// Get active effect
 	effect := runtime.GetEffect(info)
 	if effect.Shader() != nil && effect.Image() != nil {

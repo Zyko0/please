@@ -4,6 +4,8 @@ import (
 	"github.com/Zyko0/please/internal/frame"
 	"github.com/Zyko0/please/internal/locker"
 	"github.com/Zyko0/please/internal/patch"
+	"github.com/Zyko0/please/internal/runtime"
+	"github.com/Zyko0/please/metrics"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
 )
@@ -22,13 +24,17 @@ func init() {
 		patch.NewPatchMethod(&ebiten.Image{}, "DrawRectShader", patch.DrawRectShaderReplacer),
 		patch.NewPatchFunc(text.DrawWithOptions, patch.TextDrawReplacer),
 		patch.NewPatchMethod(&ebiten.Image{}, "DrawTrianglesShader", patch.DrawTrianglesShaderReplacer),
+		patch.NewPatchFunc(ebiten.NewImage, patch.NewImageReplacer),
+		patch.NewPatchFunc(ebiten.NewImageWithOptions, patch.NewImageWithOptionsReplacer),
 	}
-	// Give patch address to DrawTrianglesShader replace in order to enable/disable its own patch
+	// Set patches reference internally to allow for live unpatching
 	patch.SetTextPatch(patches[3])
 	patch.SetTrianglesShaderPatch(patches[4])
+	patch.SetNewImagePatch(patches[5])
+	patch.SetNewImageWithOptionsPatch(patches[6])
 }
 
-// Since it's asked so nicely
+// Sure!
 func GlitchMe() {
 	locker.Lock()
 	defer locker.Unlock()
@@ -37,7 +43,7 @@ func GlitchMe() {
 	}
 }
 
-// Okay, I'm sorry
+// :(
 func DontGlitchMe() {
 	locker.Lock()
 	defer locker.Unlock()
@@ -46,15 +52,9 @@ func DontGlitchMe() {
 	}
 }
 
-// Bored already?
-func Shuffle() {
-
-}
-
-type SomethingUsefull struct {
-}
-
 // Fine..
-func GiveMeSomethingUsefull() {
-
+func GiveMeSomethingUsefull() *metrics.Metrics {
+	m := &metrics.Metrics{}
+	runtime.FillMetrics(m)
+	return m
 }

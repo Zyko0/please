@@ -100,6 +100,30 @@ func ExtractInfo() *Info {
 		Line: currentLine,
 	}
 	origin := current.ParseOrigin()
+	// User caller if closest one isn't a user one
+	var user *Caller
+	if origin != OriginUser && origin != OriginEbitengineDrawFinalScreen {
+		var file string
+		var name string
+		var line int
+		userOrigin := origin
+		skip := 3
+		ok := true
+		for ok && userOrigin != OriginUser {
+			var fn uintptr
+			fn, file, line, ok = runtime.Caller(skip)
+			name = runtime.FuncForPC(fn).Name()
+			userOrigin = parseFuncOrigin(name)
+			skip++
+		}
+		if ok {
+			user = &Caller{
+				File: file,
+				Func: name,
+				Line: line,
+			}
+		}
+	}
 	// All Callers
 	var allCallers []*Caller
 	pcs := make([]uintptr, 16)
@@ -124,36 +148,20 @@ func ExtractInfo() *Info {
 		}
 		// Arrange next, prevs for all callers
 		slices.Reverse(allCallers)
-		for i := range allCallers {
+		for i, c := range allCallers {
 			if i > 0 {
 				allCallers[i].Prev = allCallers[i-1]
 			}
 			if i < len(allCallers)-1 {
 				allCallers[i].Next = allCallers[i+1]
 			}
-		}
-	}
-	// User caller if closest one isn't a user one
-	var user *Caller
-	if origin != OriginUser && origin != OriginEbitengineDrawFinalScreen {
-		var file string
-		var name string
-		var line int
-		userOrigin := origin
-		skip := 3
-		ok := true
-		for ok && userOrigin != OriginUser {
-			var fn uintptr
-			fn, file, line, ok = runtime.Caller(skip)
-			name = runtime.FuncForPC(fn).Name()
-			userOrigin = parseFuncOrigin(name)
-			skip++
-		}
-		if ok {
-			user = &Caller{
-				File: file,
-				Func: name,
-				Line: line,
+			// Update current
+			if c.File == current.File && c.Line == current.Line {
+				current = c
+			}
+			// Update user
+			if user != nil && c.File == user.File && c.Line == user.Line {
+				user = c
 			}
 		}
 	}

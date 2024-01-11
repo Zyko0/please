@@ -1,6 +1,10 @@
 package event
 
-import "github.com/hajimehoshi/ebiten/v2"
+import (
+	"math/rand"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 type ScreenEvent struct {
 	shader *ebiten.Shader
@@ -24,3 +28,11 @@ func (se *ScreenEvent) Update() {
 func (se *ScreenEvent) Expired() bool {
 	return se == nil || se.Duration == 0
 }
+
+var (
+	ScreenEventPool = []func(*rand.Rand) *ScreenEvent{
+		NewScreenEventNoop,
+		NewScreenEventRelief,
+		NewScreenEventProjection,
+	}
+)

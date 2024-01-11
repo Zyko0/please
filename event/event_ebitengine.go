@@ -18,10 +18,6 @@ func newEbitenginePlayerEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{
 			effects.NewTransformFunc(&effects.ScaleLeast{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationLinear,
 					Duration:      60,
 				},
@@ -30,10 +26,6 @@ func newEbitenginePlayerEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.Rotate{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationTriSine,
 					Duration:      60,
 				},
@@ -44,10 +36,6 @@ func newEbitenginePlayerEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.TranslateColor{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationNone,
 					Duration:      20,
 				},
@@ -78,10 +66,6 @@ func newEbitengineEnemyEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{
 			effects.NewTransformFunc(&effects.ScaleLeast{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationLinear,
 					Duration:      60,
 				},
@@ -90,10 +74,6 @@ func newEbitengineEnemyEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.Rotate{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationTriSine,
 					Duration:      20,
 				},
@@ -104,10 +84,6 @@ func newEbitengineEnemyEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.Translate{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationSine,
 					Duration:      20,
 				},
@@ -116,10 +92,6 @@ func newEbitengineEnemyEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.TranslateColor{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationNone,
 					Duration:      20,
 				},
@@ -156,10 +128,6 @@ func newEbitengineResourceEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{
 			effects.NewTransformFunc(&effects.ScaleLeast{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationLinear,
 					Duration:      60,
 				},
@@ -168,10 +136,6 @@ func newEbitengineResourceEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.TranslateColor{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationNone,
 					Duration:      20,
 				},
@@ -197,10 +161,6 @@ func newEbitengineProjectileEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{
 			effects.NewTransformFunc(&effects.ScaleLeast{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationLinear,
 					Duration:      120,
 				},
@@ -209,10 +169,6 @@ func newEbitengineProjectileEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.Rotate{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationLinear,
 					Duration:      60,
 				},
@@ -223,10 +179,6 @@ func newEbitengineProjectileEffect(rng *rand.Rand) NewEffectFunc {
 			}),
 			effects.NewTransformFunc(&effects.TranslateColor{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationNone,
 					Duration:      20,
 				},
@@ -265,10 +217,6 @@ func newEbitengineBlockEffect(rng *rand.Rand) NewEffectFunc {
 		transforms := []effects.TransformFunc{
 			effects.NewTransformFunc(&effects.TranslateColor{
 				BaseTransform: effects.BaseTransform{
-					Trigger: effects.TransformTrigger{
-						Mode:  effects.TransformTriggerModeEach,
-						Value: 1,
-					},
 					Interpolation: effects.TransformInterpolationNone,
 					Duration:      20,
 				},
@@ -289,7 +237,7 @@ func newEbitengineBlockEffect(rng *rand.Rand) NewEffectFunc {
 	}
 }
 
-func NewEbitengineEvent(rng *rand.Rand) *Event {
+func NewEventEbitengine(rng *rand.Rand) *Event {
 	return &Event{
 		effectInstances: [heuristics.Count]int{},
 		Name:            "Ebitengine",
@@ -299,7 +247,7 @@ func NewEbitengineEvent(rng *rand.Rand) *Event {
 			heuristics.Resource:   newEbitengineResourceEffect(rng),
 			heuristics.Projectile: newEbitengineProjectileEffect(rng),
 			heuristics.Block:      newEbitengineBlockEffect(rng),
-			heuristics.UI:         newRandomEffect(rng),
+			heuristics.UI:         NewNoopEffect,
 			heuristics.Text:       newRandomEffect(rng),
 			heuristics.Unknown:    NewNoopEffect,
 		},

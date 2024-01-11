@@ -59,7 +59,7 @@ func (e *Effect) UpdateCounter() {
 }
 
 func (e *Effect) Active() bool {
-	return e.counter%e.interval == 0
+	return e != nil && e.counter%e.interval == 0
 }
 
 func (e *Effect) Image() *ebiten.Image {

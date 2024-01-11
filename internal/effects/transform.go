@@ -12,14 +12,6 @@ type Transform interface {
 	Apply(vertices []ebiten.Vertex, rng *rand.Rand, tick uint64, active *uint64)
 }
 
-type TransformTriggerMode byte
-
-const (
-	TransformTriggerModeEach TransformTriggerMode = iota
-	TransformTriggerModeRng
-	TransformTriggerModeCount
-)
-
 type TransformInterpolation byte
 
 const (
@@ -32,32 +24,17 @@ const (
 	TransformInterpolationCount
 )
 
-type TransformTrigger struct {
-	Mode  TransformTriggerMode
-	Value float64
-}
-
 type TransformFunc func([]ebiten.Vertex, *rand.Rand)
 
 type BaseTransform struct {
-	Trigger       TransformTrigger
 	Interpolation TransformInterpolation
 	Duration      uint64
 }
 
 func (bt *BaseTransform) ensureTransform(rng *rand.Rand, tick uint64, active *uint64) (float32, bool) {
-	// Try to activate the transformation
+	// Activate the transformation
 	if *active < tick {
-		switch bt.Trigger.Mode {
-		case TransformTriggerModeEach:
-			if tick%uint64(bt.Trigger.Value) == 0 {
-				*active = tick + bt.Duration
-			}
-		case TransformTriggerModeRng:
-			if rng.Float64() < bt.Trigger.Value {
-				*active = tick + bt.Duration
-			}
-		}
+		*active = tick + bt.Duration
 	}
 	// If not active
 	if *active < tick {

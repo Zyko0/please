@@ -34,6 +34,7 @@ func heightNormal(uv vec2) vec3 {
 
 var ITime float
 var FTime float
+var Factor float
 
 func Fragment(dst vec4, src vec2, color vec4) vec4 {
 	const pi = 3.1415

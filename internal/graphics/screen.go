@@ -5,27 +5,16 @@ import (
 )
 
 var (
-	offscreen *ebiten.Image
-	screen    *ebiten.Image
+	screen *ebiten.Image
+	geom   *ebiten.GeoM
 )
 
 func SetScreen(img *ebiten.Image) {
 	screen = img
-	if screen != nil && (offscreen == nil || (screen.Bounds().Dx() != offscreen.Bounds().Dx() && screen.Bounds().Dy() != offscreen.Bounds().Dy())) {
-		offscreen = ebiten.NewImageWithOptions(
-			screen.Bounds(), &ebiten.NewImageOptions{
-				Unmanaged: true,
-			},
-		)
-	}
 }
 
 func Screen() *ebiten.Image {
 	return screen
-}
-
-func Offscreen() *ebiten.Image {
-	return offscreen
 }
 
 func DrawFullscreenEffect(dst, src *ebiten.Image, geom *ebiten.GeoM, shader *ebiten.Shader) {
@@ -36,5 +25,6 @@ func DrawFullscreenEffect(dst, src *ebiten.Image, geom *ebiten.GeoM, shader *ebi
 		Images: [4]*ebiten.Image{
 			src,
 		},
+		AntiAlias: true,
 	})
 }
