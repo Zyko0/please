@@ -139,7 +139,7 @@ func main() {
 	}
 
 	flag.BoolVar(&debug, "debug", false, "Logs extra information (default: false)")
-	flag.StringVar(&mode, "mode", "DEFAULT", "Select a glitch mode (NONE,DEFAULT,MEDIUM,UNSAFE)")
+	flag.StringVar(&mode, "mode", "default", "Select a glitch mode (none,default,medium,unsafe)")
 	flag.Usage()
 	flag.Parse()
 	goPkg := flag.Arg(0)

@@ -12,7 +12,7 @@ go run cmd/main.go <repository_path> [relative_build_folder:optional]
 
 Flags:
 - `--debug`: Outputs extra information about the linking process
-- `--mode`: Defines the level of glitchness (NONE,DEFAULT,MEDIUM,UNSAFE)
+- `--mode`: Defines the level of glitchness (none,default,medium,unsafe)
 
 ## Examples
 

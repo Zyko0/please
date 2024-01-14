@@ -25,15 +25,11 @@ func randomTransformInterpolation(rng *rand.Rand) effects.TransformInterpolation
 
 func randomXY(rng *rand.Rand, factor, base float32) (float32, float32) {
 	var dx, dy float32
-	if config.EffectCumulativeTransform {
+	if rng.Intn(2) == 0 {
 		dx = rng.Float32() * factor * base
+	}
+	if rng.Intn(2) == 0 {
 		dy = rng.Float32() * factor * base
-	} else {
-		if rng.Intn(2) == 0 {
-			dx = rng.Float32() * factor * base
-		} else {
-			dy = rng.Float32() * factor * base
-		}
 	}
 
 	return dx, dy
@@ -79,7 +75,7 @@ func newRandomEffect(rng *rand.Rand) NewEffectFunc {
 					Dy:            dy,
 				}
 			case 1:
-				dx, dy := randomXY(rng, 1, 20)
+				dx, dy := randomXY(rng, 1, config.EffectScaleFactor)
 				t = &effects.Scale{
 					BaseTransform: base,
 					Dx:            dx,

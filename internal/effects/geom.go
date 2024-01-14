@@ -45,26 +45,34 @@ func (s *Scale) Apply(vertices []ebiten.Vertex, rng *rand.Rand, tick uint64, act
 	if !ok {
 		return
 	}
+	dx, dy := c*(s.Dx-1), c*(s.Dy-1)
 	switch {
 	case len(vertices)%4 == 0:
 		for i := 0; i < len(vertices); i += 4 {
-			vertices[i+0].DstX -= c * s.Dx
-			vertices[i+0].DstY -= c * s.Dy
-			vertices[i+1].DstX += c * s.Dx
-			vertices[i+1].DstY -= c * s.Dy
-			vertices[i+2].DstX -= c * s.Dx
-			vertices[i+2].DstY += c * s.Dy
-			vertices[i+3].DstX += c * s.Dx
-			vertices[i+3].DstY += c * s.Dy
+			minx, miny := vertices[i+0].DstX, vertices[i+0].DstY
+			maxx, maxy := vertices[i+3].DstX, vertices[i+3].DstY
+			offx, offy := dx*abs(maxx-minx)/2, dy*abs(maxy-miny)/2
+			vertices[i+0].DstX -= offx
+			vertices[i+0].DstY -= offy
+			vertices[i+1].DstX += offx
+			vertices[i+1].DstY -= offy
+			vertices[i+2].DstX -= offx
+			vertices[i+2].DstY += offy
+			vertices[i+3].DstX += offx
+			vertices[i+3].DstY += offy
 		}
 	case len(vertices)%3 == 0:
 		for i := 0; i < len(vertices); i += 3 {
-			vertices[i+0].DstX -= c * s.Dx
-			vertices[i+0].DstY -= c * s.Dy
-			vertices[i+1].DstX += c * s.Dx
-			vertices[i+1].DstY -= c * s.Dy
-			vertices[i+2].DstX -= c * s.Dx
-			vertices[i+2].DstY += c * s.Dy
+			// Note: obviously wrong, no height or width for a triangle but probably fun
+			minx, miny := vertices[i+0].DstX, vertices[i+0].DstY
+			maxx, maxy := vertices[i+2].DstX, vertices[i+2].DstY
+			offx, offy := dx*abs(maxx-minx)/2, dy*abs(maxy-miny)/2
+			vertices[i+0].DstX -= offx
+			vertices[i+0].DstY -= offy
+			vertices[i+1].DstX += offx
+			vertices[i+1].DstY -= offy
+			vertices[i+2].DstX -= offx
+			vertices[i+2].DstY += offy
 		}
 	}
 }

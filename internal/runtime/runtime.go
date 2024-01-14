@@ -150,6 +150,7 @@ func Update(screen *ebiten.Image) {
 	ignoredTick = false
 	// If not chilling anymore and no active event, make a new one
 	if !frame.Chilling() && activeEvent.Expired() {
+		//activeEvent = event.NewEventNoop(rng)
 		if config.Noop {
 			activeEvent = event.NewEventNoop(rng)
 		} else {
@@ -161,6 +162,7 @@ func Update(screen *ebiten.Image) {
 	activeEvent.Update()
 	// If not chilling anymore and no active screen event, and it's time for one
 	if !frame.Chilling() && activeScreenEvent.Expired() {
+		//activeScreenEvent = event.NewScreenEventRelief(rng)
 		if config.Noop {
 			activeScreenEvent = event.NewScreenEventNoop(rng)
 		} else {
