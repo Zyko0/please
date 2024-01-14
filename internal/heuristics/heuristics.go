@@ -147,6 +147,7 @@ var blockCoeffs = map[string]float64{
 	"environment": 1.,
 	"terrain":     1.,
 	"map":         1.,
+	"cell":        1.,
 	"spawner":     1.,
 	"wall":        1.,
 	"tree":        1.,

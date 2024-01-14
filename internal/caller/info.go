@@ -25,6 +25,9 @@ const (
 
 func parseFuncOrigin(name string) Origin {
 	switch {
+	// Note: consider as user if it's an ebitengine example
+	case strings.HasPrefix(name, "github.com/hajimehoshi/ebiten/v2/examples"):
+		return OriginUser
 	case strings.HasPrefix(name, "github.com/hajimehoshi/ebiten"):
 		switch name {
 		case "github.com/hajimehoshi/ebiten/v2/text.drawGlyph":

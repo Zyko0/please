@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Zyko0/please/event"
+	"github.com/Zyko0/please/internal/event"
 	"github.com/Zyko0/please/internal/caller"
 	"github.com/Zyko0/please/internal/config"
 	"github.com/Zyko0/please/internal/effects"
@@ -29,9 +29,6 @@ var (
 	callsByHash     = map[caller.Hash]uint{}
 	callersByHash   = map[caller.Hash]*caller.Info{}
 	srcBoundsByHash = map[caller.Hash][2]uint{}
-	/*lastCallsByHash     = map[caller.Hash]uint{}
-	lastCallersByHash   = map[caller.Hash]*caller.Info{}
-	lastSrcBoundsByHash = map[caller.Hash][2]uint{}*/
 
 	heuristicsMapping = map[caller.Hash]*heuristics.Confidence{}
 
@@ -150,7 +147,7 @@ func Update(screen *ebiten.Image) {
 	ignoredTick = false
 	// If not chilling anymore and no active event, make a new one
 	if !frame.Chilling() && activeEvent.Expired() {
-		//activeEvent = event.NewEventNoop(rng)
+		//activeEvent = event.NewEventEbitengine(rng)
 		if config.Noop {
 			activeEvent = event.NewEventNoop(rng)
 		} else {
@@ -162,7 +159,6 @@ func Update(screen *ebiten.Image) {
 	activeEvent.Update()
 	// If not chilling anymore and no active screen event, and it's time for one
 	if !frame.Chilling() && activeScreenEvent.Expired() {
-		//activeScreenEvent = event.NewScreenEventRelief(rng)
 		if config.Noop {
 			activeScreenEvent = event.NewScreenEventNoop(rng)
 		} else {
@@ -174,31 +170,7 @@ func Update(screen *ebiten.Image) {
 	for _, e := range effectsByHash {
 		e.ResetCounter()
 	}
-	// Debug
-	var biggestFn, biggestCount int
-	for hash, count := range callsByHash {
-		str, ok := infoString(hash)
-		if !ok {
-			continue
-		}
-		biggestFn = max(biggestFn, len(str))
-		biggestCount = max(biggestCount, int(count))
-	}
-	/*fmtFn := strconv.FormatInt(int64(biggestFn), 10)
-	cnt := int64(math.Floor(
-		max(math.Log10(float64(biggestCount)), 0) + 1,
-	))
-	fmtCount := strconv.FormatInt(cnt, 10)*/
-
-	/*fmt.Println("Statistics")
-	fmtFull := "%-" + fmtFn + "s => %" + fmtCount + "d\n"
-	for hash, count := range lastCallsByHash {
-		str, ok := infoString(hash)
-		if !ok {
-			continue
-		}
-		fmt.Printf(fmtFull, str, count)
-	}*/
+	// Debug // TODO: remove below
 	// Update heuristics (who is a player, an enemy, a projectile, etc..)
 	heuristicsMapping = heuristics.Compute(callersByHash, srcBoundsByHash)
 	/*fmt.Println("Heuristics")

@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -14,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/Zyko0/please"
+	"github.com/fatih/color"
 	"github.com/otiai10/copy"
 )
 
@@ -32,19 +32,29 @@ func init() {
 )
 
 var (
-	debug bool
-	mode  string
+	gologs bool
+	mode   string
 )
 
 func debugLog(format string, args ...any) {
-	if !debug {
+	color.Set(color.FgHiGreen, color.Bold)
+	fmt.Printf(format+"\n", args...)
+	color.Unset()
+}
+
+func goLog(text string) {
+	if !gologs {
 		return
 	}
-	fmt.Printf(format+"\n", args...)
+	color.Set(color.FgWhite)
+	fmt.Print(text)
+	color.Unset()
 }
 
 func errorLog(format string, args ...any) {
+	color.Set(color.FgRed, color.Bold)
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
+	color.Unset()
 }
 
 func resolvePackagePath(pkg, version string) (string, error) {
@@ -135,10 +145,11 @@ func validateMode() error {
 func main() {
 	gopath, ok := os.LookupEnv("GOPATH")
 	if !ok {
-		log.Fatal("no GOPATH environment variable found")
+		errorLog("no GOPATH environment variable found")
+		return
 	}
 
-	flag.BoolVar(&debug, "debug", false, "Logs extra information (default: false)")
+	flag.BoolVar(&gologs, "golog", false, "Outputs logs resulting from 'go' commands (default: false)")
 	flag.StringVar(&mode, "mode", "default", "Select a glitch mode (none,default,medium,unsafe)")
 	flag.Usage()
 	flag.Parse()
@@ -194,7 +205,7 @@ func main() {
 	cmd.Env = os.Environ()
 	out, err := cmd.CombinedOutput()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go mod init %s': %v", "__glitch", err)
@@ -207,7 +218,7 @@ func main() {
 	debugLog("Executing 'go get %s'", goPkgRoot)
 	out, err = cmd.CombinedOutput()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go get %s': %v", goPkgRoot, err)
@@ -254,7 +265,7 @@ func main() {
 	cmd.Env = os.Environ()
 	out, err = cmd.CombinedOutput()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go get github.com/Zyko0/please': %v", err)
@@ -267,7 +278,7 @@ func main() {
 	cmd.Env = os.Environ()
 	out, err = cmd.CombinedOutput()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go mod edit LOCALTEST': %v", err)
@@ -280,7 +291,7 @@ func main() {
 	cmd.Env = os.Environ()
 	out, err = cmd.CombinedOutput()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go mod tidy': %v", err)
@@ -296,7 +307,7 @@ func main() {
 	// Start command asynchronously
 	err = cmd.Start()
 	if len(out) > 0 {
-		debugLog(string(out))
+		goLog(string(out))
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go run .': %v", err)
