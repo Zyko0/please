@@ -5,10 +5,10 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Zyko0/please/internal/event"
 	"github.com/Zyko0/please/internal/caller"
 	"github.com/Zyko0/please/internal/config"
 	"github.com/Zyko0/please/internal/effects"
+	"github.com/Zyko0/please/internal/event"
 	"github.com/Zyko0/please/internal/frame"
 	"github.com/Zyko0/please/internal/graphics"
 	"github.com/Zyko0/please/internal/heuristics"
@@ -47,25 +47,22 @@ func GetEffect(info *caller.Info) *effects.Effect {
 	hash := info.Hash()
 	e, haveEffect := effectsByHash[hash]
 	h, haveHeuristic := heuristicsMapping[hash]
-	// If the current tick is ignored, do not update effects
-	if !ignoredTick {
-		// If no active effect for the hash, instanciate one
-		// Or if an heuristic has been missed last frame (UNKNOWN)
-		// => try instanciate a more adequate effect
-		if !haveEffect ||
-			(haveHeuristic && h.ID != heuristics.Unknown && e.IsNoop()) {
-			if activeEvent == nil || activeEvent.Expired() {
-				return noopEffect
-			}
-			if !haveEffect && !haveHeuristic {
-				e = activeEvent.NewEffect(heuristics.Unknown)
-			} else {
-				e = activeEvent.NewEffect(h.ID)
-			}
-			effectsByHash[hash] = e
+	// If no active effect for the hash, instanciate one
+	// Or if an heuristic has been missed last frame (UNKNOWN)
+	// => try instanciate a more adequate effect
+	if !haveEffect ||
+		(haveHeuristic && h.ID != heuristics.Unknown && e.IsNoop()) {
+		if activeEvent == nil || activeEvent.Expired() {
+			return noopEffect
 		}
-		defer e.UpdateCounter()
+		if !haveEffect && !haveHeuristic {
+			e = activeEvent.NewEffect(heuristics.Unknown)
+		} else {
+			e = activeEvent.NewEffect(h.ID)
+		}
+		effectsByHash[hash] = e
 	}
+	e.UpdateCounter()
 	if !e.Active() {
 		return noopEffect
 	}
@@ -147,7 +144,6 @@ func Update(screen *ebiten.Image) {
 	ignoredTick = false
 	// If not chilling anymore and no active event, make a new one
 	if !frame.Chilling() && activeEvent.Expired() {
-		//activeEvent = event.NewEventEbitengine(rng)
 		if config.Noop {
 			activeEvent = event.NewEventNoop(rng)
 		} else {
@@ -170,7 +166,15 @@ func Update(screen *ebiten.Image) {
 	for _, e := range effectsByHash {
 		e.ResetCounter()
 	}
-	// Debug // TODO: remove below
+	// Warnings
+	// TODO: these are never drawn
+	if !frame.Chilling() {
+		for _, wb := range warnings {
+			if !wb.Expired() {
+				wb.Update()
+			}
+		}
+	}
 	// Update heuristics (who is a player, an enemy, a projectile, etc..)
 	heuristicsMapping = heuristics.Compute(callersByHash, srcBoundsByHash)
 	/*fmt.Println("Heuristics")
@@ -183,7 +187,7 @@ func Update(screen *ebiten.Image) {
 	}
 	fmt.Println("------------")*/
 	updateMetrics()
-	m.Print()
+	//m.Print()
 	// Clean up
 	clear(callsByHash)
 	clear(callersByHash)

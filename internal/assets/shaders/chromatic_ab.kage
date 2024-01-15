@@ -1,0 +1,29 @@
+//kage:unit pixels
+
+package main
+
+func gray(clr vec3) float {
+	return clr.r*0.299 + clr.g*0.587 + clr.b*0.114
+}
+
+var ITime float
+var FTime float
+var Factor float
+
+func Fragment(dst vec4, src vec2, color vec4) vec4 {
+	const pi = 3.1415
+
+	clr := vec3(gray(imageSrc0At(src).rgb))
+	amount := vec3(
+		sin((ITime+FTime)*Factor)*2,
+		sin((ITime+FTime)*Factor*1.5),
+		sin((ITime+FTime)*Factor+pi/2),
+	) * (0.5 + sqrt(Factor))
+	amount = pow(amount, vec3(2)) * 0.5
+	clr.r += imageSrc0At(vec2(src.x-amount.x, src.y-amount.z)).r
+	clr.g += imageSrc0At(vec2(src.x+amount.y, src.y-amount.x)).g
+	clr.b += imageSrc0At(vec2(src.x+amount.z, src.y+amount.y)).b
+	// TODO: not done playing with it
+
+	return vec4(clr, 1.)
+}

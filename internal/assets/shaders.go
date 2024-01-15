@@ -19,6 +19,10 @@ var (
 	//go:embed shaders/projection.kage
 	srcShaderProjection []byte
 	ShaderProjection    *ebiten.Shader
+
+	//go:embed shaders/chromatic_ab.kage
+	srcShaderChromaticAb []byte
+	ShaderChromaticAb    *ebiten.Shader
 )
 
 func init() {
@@ -35,6 +39,11 @@ func init() {
 	}
 
 	ShaderProjection, err = ebiten.NewShader(srcShaderProjection)
+	if err != nil {
+		log.Fatal("err:", err)
+	}
+
+	ShaderChromaticAb, err = ebiten.NewShader(srcShaderChromaticAb)
 	if err != nil {
 		log.Fatal("err:", err)
 	}

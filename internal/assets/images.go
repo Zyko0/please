@@ -3,6 +3,7 @@ package assets
 import (
 	"bytes"
 	_ "embed"
+	"image/color"
 	"image/png"
 	"log"
 
@@ -10,17 +11,11 @@ import (
 )
 
 var (
-	//go:embed images/gopheranim0.png
-	gopheranim0Src   []byte
-	GopherAnim0Image *ebiten.Image
+	WhiteImage *ebiten.Image
 
-	//go:embed images/gopheranim1.png
-	gopheranim1Src   []byte
-	GopherAnim1Image *ebiten.Image
-
-	//go:embed images/gopheranim2.png
-	gopheranim2Src   []byte
-	GopherAnim2Image *ebiten.Image
+	//go:embed images/gopher_enemy.png
+	gopherEnemySrc   []byte
+	GopherEnemyImage *ebiten.Image
 
 	//go:embed images/gopher.png
 	gopherSrc   []byte
@@ -82,23 +77,14 @@ var (
 func init() {
 	var err error
 
-	img, err := png.Decode(bytes.NewReader(gopheranim0Src))
-	if err != nil {
-		log.Fatal(err)
-	}
-	GopherAnim0Image = ebiten.NewImageFromImage(img)
+	WhiteImage = ebiten.NewImage(3, 3)
+	WhiteImage.Fill(color.White)
 
-	img, err = png.Decode(bytes.NewReader(gopheranim1Src))
+	img, err := png.Decode(bytes.NewReader(gopherEnemySrc))
 	if err != nil {
 		log.Fatal(err)
 	}
-	GopherAnim1Image = ebiten.NewImageFromImage(img)
-
-	img, err = png.Decode(bytes.NewReader(gopheranim2Src))
-	if err != nil {
-		log.Fatal(err)
-	}
-	GopherAnim2Image = ebiten.NewImageFromImage(img)
+	GopherEnemyImage = ebiten.NewImageFromImage(img)
 
 	img, err = png.Decode(bytes.NewReader(gopherSrc))
 	if err != nil {

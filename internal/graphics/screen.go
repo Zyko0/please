@@ -19,7 +19,6 @@ func Screen() *ebiten.Image {
 
 func DrawFullscreenEffect(dst, src *ebiten.Image, geom *ebiten.GeoM, shader *ebiten.Shader) {
 	vertices, indices := QuadVerticesIndices(dst, src, geom, nil)
-	dst.Clear()
 	dst.DrawTrianglesShader(vertices, indices, shader, &ebiten.DrawTrianglesShaderOptions{
 		Uniforms: EffectUniforms(),
 		Images: [4]*ebiten.Image{

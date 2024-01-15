@@ -107,7 +107,7 @@ func newEbitengineEnemyEffect(rng *rand.Rand) NewEffectFunc {
 			1,
 			transforms,
 			assets.ShaderNoop,
-			assets.GopherAnim0Image, nil,
+			assets.GopherEnemyImage, nil,
 		)
 	}
 }

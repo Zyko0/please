@@ -7,7 +7,7 @@
 Gopher images are all provided under https://creativecommons.org/licenses/by/3.0/ license.
 
 `gopher.png` is made by Renee French.
-`gopheranim0.png`, `gopheranim1.png`, `gopheranim2.png` are made by https://github.com/mattn/gopher.
+`gopher_enemy.png` is made by https://github.com/mattn/gopher.
 
 ### Ebiten
 

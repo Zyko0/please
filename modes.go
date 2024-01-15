@@ -28,7 +28,7 @@ func SetMode(mode Mode) {
 		config.EffectTranslationFactor = 1
 		config.EffectScaleFactor = 2
 		config.EffectColorFactor = 1
-		config.EffectFrequency = 0.2
+		config.EffectFrequency = 0.25
 		config.EventDuration = 5
 		config.ScreenEventDuration = 7.5
 		config.UniformFactor = 1

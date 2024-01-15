@@ -83,7 +83,6 @@ func QuadVerticesIndicesWithDims(dst, src *ebiten.Image, width, height int, geom
 		g = colorScale.G()
 		b = colorScale.B()
 		a = colorScale.A()
-		//fmt.Println("clrscale??", r, g, b, a)
 	}
 	var sx, sy, sw, sh float32
 	if src != nil {

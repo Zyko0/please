@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	please.SetMode(please.Mode("%s")) // TODO: tmp because no private repo resolution atm
+	please.SetMode(please.Mode("%s"))
 	please.GlitchMe()
 }
 `)
@@ -269,19 +269,6 @@ func main() {
 	}
 	if err != nil {
 		errorLog("err: couldn't execute 'go get github.com/Zyko0/please': %v", err)
-		return
-	}
-	// TODO: this is tmp local tests
-	//go mod edit -replace github.com/pselle/bar=/Users/pselle/Projects/bar
-	cmd = exec.Command("go", "mod", "edit", "-replace", "github.com/Zyko0/please=C:/Users/Zyko/go/src/github.com/Zyko0/please")
-	cmd.Dir = pathTmpDir
-	cmd.Env = os.Environ()
-	out, err = cmd.CombinedOutput()
-	if len(out) > 0 {
-		goLog(string(out))
-	}
-	if err != nil {
-		errorLog("err: couldn't execute 'go mod edit LOCALTEST': %v", err)
 		return
 	}
 	// go mod tidy

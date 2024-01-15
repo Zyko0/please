@@ -40,7 +40,10 @@ func NewImageReplacer(width, height int) *ebiten.Image {
 	locker.Lock()
 	defer locker.Unlock()
 
-	runtime.RegisterNewImage()
+	info := caller.ExtractInfo()
+	if info.Origin == caller.OriginUser {
+		runtime.RegisterNewImage()
+	}
 
 	patchNewImage.Disable()
 	defer patchNewImage.Enable()
@@ -51,7 +54,10 @@ func NewImageWithOptionsReplacer(bounds image.Rectangle, options *ebiten.NewImag
 	locker.Lock()
 	defer locker.Unlock()
 
-	runtime.RegisterNewImage()
+	info := caller.ExtractInfo()
+	if info.Origin == caller.OriginUser {
+		runtime.RegisterNewImage()
+	}
 
 	patchNewImageWithOptions.Disable()
 	defer patchNewImageWithOptions.Enable()
@@ -75,12 +81,16 @@ func DrawImageReplacer(dst, src *ebiten.Image, opts *ebiten.DrawImageOptions) {
 		}
 	}
 	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
+		var abort bool
 		runtime.Update(dst)
+		patchTrianglesShader.Disable()
 		// If there's a fullscreen effect display screen with the effect and return
 		if evt := runtime.GetScreenEvent(); evt != nil && !evt.Expired() {
-			patchTrianglesShader.Disable()
-			defer patchTrianglesShader.Enable()
+			abort = true
 			graphics.DrawFullscreenEffect(dst, src, geom, evt.Shader())
+		}
+		patchTrianglesShader.Enable()
+		if abort {
 			return
 		}
 	}
@@ -156,12 +166,16 @@ func DrawRectShaderReplacer(dst *ebiten.Image, width, height int, shader *ebiten
 	// If DrawFinalScreen is called, update the global manager
 	// https://github.com/hajimehoshi/ebiten/blob/v2.6.3/gameforui.go#L184
 	if info.Origin == caller.OriginEbitengineDrawFinalScreen {
-		runtime.Update(dst)
+		var abort bool
+		runtime.Update(opts.Images[0])
+		patchTrianglesShader.Disable()
 		// If there's a fullscreen effect display screen with the effect and return
 		if evt := runtime.GetScreenEvent(); evt != nil && !evt.Expired() {
-			patchTrianglesShader.Disable()
-			defer patchTrianglesShader.Enable()
+			abort = true
 			graphics.DrawFullscreenEffect(dst, opts.Images[0], &opts.GeoM, evt.Shader())
+		}
+		patchTrianglesShader.Enable()
+		if abort {
 			return
 		}
 	}
