@@ -53,7 +53,7 @@ func DontGlitchMe() {
 }
 
 // Fine..
-func GiveMeSomethingUsefull() *metrics.Metrics {
+func GiveMeSomethingUseful() *metrics.Metrics {
 	m := &metrics.Metrics{}
 	runtime.FillMetrics(m)
 	return m

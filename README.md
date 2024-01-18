@@ -41,7 +41,7 @@ please.SetMode(please.Unsafe) // Effects frequency and various factors are "maxe
 
 In order for this library not to be totally useless, there is a way to fetch a few metrics by doing:
 ```go
-metrics := please.GiveMeSomethingUsefull()
+metrics := please.GiveMeSomethingUseful()
 metrics.Print()
 ```
 
