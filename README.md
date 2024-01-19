@@ -45,8 +45,18 @@ metrics := please.GiveMeSomethingUseful()
 metrics.Print()
 ```
 
-### Notes
+# In-game captures
 
-- Despite the attempt at putting some locks here and there, this library is definitely not thread-safe (if you're calling DrawX commands from multiple goroutines at the same time).
+* `go run cmd/main.go --mode=unsafe github.com/kettek/ebijam22 cmd/magnet`
+
+![magnet](https://github.com/Zyko0/please/assets/13394516/da390452-d02a-4fb3-836a-4d0f49bad1f1)
+
+* `go run cmd/main.go --mode=unsafe github.com/tinne26/transition`
+
+![transition](https://github.com/Zyko0/please/assets/13394516/8fcd35d5-a660-4f3e-b630-06257e7688de)
+
+# Notes
+
+- Despite the attempt at putting some locks here and there, this library is definitely not thread-safe (if you're calling Draw commands from multiple goroutines at the same time).
 - Not many fancy effects unfortunately, but some extra could be plugged easily after the package gets cleaned up a bit (jam code)
 - Only tested on Windows!
